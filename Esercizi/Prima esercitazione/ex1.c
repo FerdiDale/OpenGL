@@ -32,7 +32,7 @@ void keyboard (unsigned char key, int x, int y) {
 }
 
 void redraw(void) {  
-    glClearColor(red, blue, green, 1); //Pulizia buffer del colore (per questo tutto nero)
+    glClearColor(red, green, blue, 1); //Pulizia buffer del colore (per questo tutto nero)
     glClear(GL_COLOR_BUFFER_BIT);
     glEnd(); //Fine disegno primitive
     glFlush(); //Richiesta visualizzazione primitiva (definita in glBegin - glEnd)
