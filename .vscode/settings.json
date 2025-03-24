@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "gl.h": "c",
+        "time.h": "c",
+        "glut.h": "c"
+    }
+}
