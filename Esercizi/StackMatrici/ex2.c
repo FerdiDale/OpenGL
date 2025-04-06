@@ -8,29 +8,45 @@
 
 float minutesAngle = 0;
 float secondsAngle = 0;
-byte stopped = 1;
+byte stopped = 1, started = 0, restarted = 0;
+clock_t startTime, endTime;
+int timeDiff;
 
 void timeFunc (int value) {
+    if (started == 1 && value == 1)
+        return;
+    started = 1;
     if (stopped == 0) {
-        secondsAngle -= 6;
-        if (secondsAngle <= (-360)) {
-            minutesAngle -= 360/60;
-            secondsAngle = 0;
+        if (restarted != 1) {
+            secondsAngle -= 6;
+            if (secondsAngle <= (-360)) {
+                minutesAngle -= 360/60;
+                secondsAngle = 0;
+            }
+            glutPostRedisplay();
+            glutTimerFunc(1000, timeFunc, 0);
         }
-        glutPostRedisplay();
-        glutTimerFunc(1000, timeFunc, 0);
+        else {
+            endTime = clock();
+            timeDiff = (int)(endTime - startTime) / CLOCKS_PER_SEC * 1000;
+            restarted = 0;
+            glutTimerFunc(1000 - timeDiff, timeFunc, 0);
+        }
+    }
+    else {
+        started = 0;
     }
 }
 
 void mouseFunc (int button, int state, int x, int y) {
-    printf("%d", stopped);
     if (button == GLUT_LEFT_BUTTON) {
         if (state == GLUT_DOWN) {
             if (stopped == 1) {
                 stopped = 0;
-                glutTimerFunc(1000, timeFunc, 0);
+                glutTimerFunc(1000, timeFunc, 1);
             }
             else {
+                restarted = 0;
                 stopped = 1;
             }
         }
@@ -39,6 +55,8 @@ void mouseFunc (int button, int state, int x, int y) {
         if (state == GLUT_DOWN) {
             minutesAngle = 0;
             secondsAngle = 0;
+            restarted = 1;
+            startTime = clock();
         }
     }
 }

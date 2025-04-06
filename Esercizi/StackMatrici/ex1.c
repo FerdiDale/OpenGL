@@ -25,7 +25,6 @@ void mouseFunc (int button, int state, int x, int y) {
 void motionFunc (int x, int y) {
     if (pressed) {
         minutesAngle -= 360/60;
-        printf("%f\n", minutesAngle);
         if (minutesAngle <= (-360)) {
             hoursAngle -= 360/12;
             minutesAngle = 0;
