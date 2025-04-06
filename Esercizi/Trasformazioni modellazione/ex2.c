@@ -7,64 +7,54 @@
 
 float posX = 0, posY = 0;
 float angle = 0, scaleX = 1, scaleY = 1;
+int windowWidth = 500, windowHeight = 500;
+int rotating = 0, scaling = 0;
+float pressX, pressY;
+float baseScaleX, baseScaleY, baseAngle;
 
-void keyboard (unsigned char key, int x, int y) {
-    switch (key){
-        case 'q':
-            angle-=15;
-            glutPostRedisplay();
-            break;
-
-            
-        case 'w':
-            angle+=15;
-            glutPostRedisplay();
-            break;
-
-            
-        case '.':
-            scaleX*=2;
-            scaleY*=2;
-            glutPostRedisplay();
-            break;
-
-        
-        case ',':
-            scaleX/=2;
-            scaleY/=2;
-            glutPostRedisplay();
-            break;
-
-        case 27:
-            exit(0);
-    }
+float getRelativeX (float pointerX) {
+    return (pointerX/windowWidth*2)-1;
 }
 
-void specialKeyboard (int key, int x, int y) {
-    switch (key){
+float getRelativeY (float pointerY) {
+    return (pointerY/windowHeight*(-2))+1;
+}
 
-        case GLUT_KEY_RIGHT:
-            posX += 0.5;
-            glutPostRedisplay();
-            break;
-
-            
-        case GLUT_KEY_LEFT:
-            posX -= 0.5;
-            glutPostRedisplay();
-            break;
-
-        case GLUT_KEY_UP:
-            posY += 0.5;
-            glutPostRedisplay();
-            break;
-
-        
-        case GLUT_KEY_DOWN:
-            posY -= 0.5;
-            glutPostRedisplay();
-            break;
+void mouseCallback (int button, int state, int x, int y) {
+    if (state == GLUT_DOWN) {
+        pressX = x;
+        pressY = y;
     }
+    if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+        rotating = 1;
+        baseAngle = angle;
+    }
+    else if (button == GLUT_RIGHT_BUTTON && state == GLUT_UP) 
+        rotating = 0;
+    if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+        scaling = 1;
+        baseScaleX = scaleX;
+        baseScaleY = scaleY;
+    }
+    else if (button == GLUT_LEFT_BUTTON && state == GLUT_UP) 
+        scaling = 0;
+}
+
+void passiveMotionCallback (int x, int y) {
+    posX = getRelativeX(x);
+    posY = getRelativeY(y);
+    glutPostRedisplay();
+}
+
+void motionCallback (int x, int y) {
+    if (rotating) {
+        angle = baseAngle + acos(getRelativeX(x))/3.14*180;
+    }
+    else if (scaling) {
+        scaleX = baseScaleX + (getRelativeX(x)-getRelativeX(pressX));
+        scaleY = baseScaleY + (getRelativeY(y)-getRelativeY(pressY));
+    }
+    glutPostRedisplay();
 }
 
 GLvoid drawScene(GLvoid) {
@@ -98,10 +88,11 @@ GLvoid drawScene(GLvoid) {
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
-    glutInitWindowSize ( 500, 500 );
+    glutInitWindowSize ( windowWidth, windowHeight );
     glutCreateWindow("Esercizio"); //Creazione finestra
     glutDisplayFunc(drawScene); //Richiamo funzione di disegno
-    glutSpecialFunc(specialKeyboard);
-    glutKeyboardFunc(keyboard);
+    glutMotionFunc(motionCallback);
+    glutPassiveMotionFunc(passiveMotionCallback);
+    glutMouseFunc(mouseCallback);
     glutMainLoop(); //Ciclo principale
 }
