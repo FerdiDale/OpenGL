@@ -8,9 +8,22 @@
 
 float minutesAngle = 0;
 float secondsAngle = 0;
+float angle;
 byte stopped = 1, started = 0, restarted = 0;
 clock_t startTime, endTime;
 int timeDiff;
+
+void keyboard (unsigned char key, int x, int y) {
+    switch (key){
+        case ' ':
+            angle+=45;
+            glutPostRedisplay();
+            break;
+
+        case 27:
+            exit(0);
+    }
+}
 
 void timeFunc (int value) {
     if (started == 1 && value == 1)
@@ -64,32 +77,72 @@ void mouseFunc (int button, int state, int x, int y) {
 GLvoid drawScene(GLvoid) {
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(90, 1, 1, 5);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glTranslatef(0.0, 0.0, -2.0);
+    glRotatef(angle, 0.0, 1.0, 0.0);
 
     glBegin( GL_TRIANGLE_FAN );
-    glColor4f( 1.0, 1.0, 1.0 , 1.0);
-    glVertex2f(0.0, 0.0);
+    glColor4f( 1.0, 1.0, 1.0, 1.0);
     float radius = 0.7;
     float x;
     float y;
+    float nearZ = 0.0;
+    float farZ = -0.2;
+    glVertex3f(0.0, 0.0, nearZ);
     for (int i = 0; i < 12 ; i++)
     {
         float angle = i*6.28/12;
         x = radius*cos(angle);
         y = radius*sin(angle);
-        glVertex2f(x, y);
+        glVertex3f(x, y, nearZ);
     }
-    glVertex2f(0.7, 0.0);
+    glVertex3f(0.7, 0.0, nearZ);
+    glEnd();
+
+    glBegin( GL_QUAD_STRIP );
+    glColor4f( 1.0, 1.0, 0.0 , 1.0);
+    glVertex3f(0.0, 0.0, nearZ);
+    glVertex3f(0.0, 0.0, farZ);
+    for (int i = 0; i < 12 ; i++)
+    {
+        float angle = i*6.28/12;
+        x = radius*cos(angle);
+        y = radius*sin(angle);
+        glVertex3f(x, y, nearZ);
+        glVertex3f(x, y, farZ);
+    }
+    glVertex3f(0.7, 0.0, nearZ);
+    glVertex3f(0.7, 0.0, farZ);
+    glEnd();
+
+    glBegin( GL_TRIANGLE_FAN );
+    glColor4f( 1.0, 0.0, 0.0, 1.0);
+    glVertex3f(0.0, 0.0, farZ);
+    for (int i = 0; i < 12 ; i++)
+    {
+        float angle = i*6.28/12;
+        x = radius*cos(angle);
+        y = radius*sin(angle);
+        glVertex3f(x, y, farZ);
+    }
+    glVertex3f(0.7, 0.0, farZ);
     glEnd();
 
     glPushMatrix();
     glRotatef(minutesAngle, 0, 0, 1);
     glBegin( GL_POLYGON );
     glColor4f( 0.0, 1.0, 0.0 , 1.0);
-    glVertex2f(-0.02, 0.0);
-    glVertex2f(-0.02, 0.5);
-    glVertex2f(0.02, 0.5);
-    glVertex2f(0.02, 0.0);
+    glVertex3f(-0.02, 0.0, nearZ+0.001);
+    glVertex3f(-0.02, 0.5, nearZ+0.001);
+    glVertex3f(0.02, 0.5, nearZ+0.001);
+    glVertex3f(0.02, 0.0, nearZ+0.001);
     glEnd();
     glPopMatrix();
 
@@ -97,10 +150,10 @@ GLvoid drawScene(GLvoid) {
     glRotatef(secondsAngle, 0, 0, 1);
     glBegin( GL_POLYGON );
     glColor4f( 0.0, 0.0, 0.0 , 1.0);
-    glVertex2f(-0.01, 0.0);
-    glVertex2f(-0.01, 0.6);
-    glVertex2f(0.01, 0.6);
-    glVertex2f(0.01, 0.0);
+    glVertex3f(-0.01, 0.0, nearZ+0.001);
+    glVertex3f(-0.01, 0.6, nearZ+0.001);
+    glVertex3f(0.01, 0.6, nearZ+0.001);
+    glVertex3f(0.01, 0.0, nearZ+0.001);
     glEnd();
     glPopMatrix();
 
@@ -109,9 +162,11 @@ GLvoid drawScene(GLvoid) {
 
 int main(int argc, char** argv) {
     glutInit(&argc, argv);
+    glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize ( 500, 500 );
     glutCreateWindow("Esercizio"); //Creazione finestra
     glutDisplayFunc(drawScene); //Richiamo funzione di disegno
     glutMouseFunc(mouseFunc);
+    glutKeyboardFunc(keyboard);
     glutMainLoop(); //Ciclo principale
 }
