@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <math.h>
 
+//RICORDATI DI DISEGNARE LE NORMALI
+
 float DEG_TO_RAD = 3.14/180;
 float xzAngle = 0;
 float yzAngle = 0;
@@ -170,6 +172,7 @@ GLvoid drawScene(GLvoid) {
     glClearColor(0.0, 0.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
+    glEnable(GL_NORMALIZE);
     glShadeModel(GL_FLAT);
     glEnable(GL_LIGHTING);
     glEnable(GL_LIGHT0);
@@ -180,10 +183,6 @@ GLvoid drawScene(GLvoid) {
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
     gluLookAt(eyeX, eyeY, eyeZ, 1.0, 1.5, 2.0, 0.0, 1.0, 0.0);
-    GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f}; // Luce bianca
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    GLfloat light_position[] = { -150, 150, 150, 1.0f };
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position); 
     
     tVertex currVertex;
     for (int i = 0; i < polyhedron.nFaces; i++) {
