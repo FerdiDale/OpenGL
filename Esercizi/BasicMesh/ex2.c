@@ -19,12 +19,14 @@ struct vertex {
     float x; 
     float y;
     float z;
+    float nx;
+    float ny;
+    float nz;
 } typedef tVertex;
 
 struct polygon {
     int nVertices;
     int* vIndexes;
-    tVertex normal;
 } typedef tPolygon;
 
 struct polyhedron {
@@ -35,7 +37,6 @@ struct polyhedron {
 } typedef tPolyhedron;
 
 tPolyhedron polyhedron;
-
 
 tVertex getNthIndexedVertex (tPolygon face, int n, tPolyhedron refPolyhedron) {
     return refPolyhedron.vertices[face.vIndexes[n]];
@@ -60,76 +61,58 @@ tVertex getNormal (tPolygon face, tPolyhedron refPolyhedron) {
     return (tVertex){nx, ny, nz};
 }
 
-tPolyhedron initializePolyhedron (tPolyhedron* polyhedron) {
+tPolyhedron readPolyhedron (char* pathname, tPolyhedron* polyhedron) {
 
-    polyhedron->nFaces = 7;
-    polyhedron->faces = (tPolygon*)(malloc(7*sizeof(tPolygon)));
+    FILE *fileptr;
+    fileptr = fopen(pathname, "r");
 
-    polyhedron->nVertices = 10;
-    polyhedron->vertices = (tVertex*)(malloc(10*sizeof(tVertex)));
-    polyhedron->vertices[0] = (tVertex){0, 0, 0};
-    polyhedron->vertices[1] = (tVertex){2, 0, 0};
-    polyhedron->vertices[2] = (tVertex){2, 2, 0};
-    polyhedron->vertices[3] = (tVertex){1, 3, 0};
-    polyhedron->vertices[4] = (tVertex){0, 2, 0};
-    polyhedron->vertices[5] = (tVertex){0, 0, 4};
-    polyhedron->vertices[6] = (tVertex){2, 0, 4};
-    polyhedron->vertices[7] = (tVertex){2, 2, 4};
-    polyhedron->vertices[8] = (tVertex){1, 3, 4};
-    polyhedron->vertices[9] = (tVertex){0, 2, 4};
-
-    polyhedron->faces[0].nVertices = 4;
-    polyhedron->faces[1].nVertices = 4;
-    polyhedron->faces[2].nVertices = 4;
-    polyhedron->faces[3].nVertices = 4;
-    polyhedron->faces[4].nVertices = 4;
-    polyhedron->faces[5].nVertices = 5;
-    polyhedron->faces[6].nVertices = 5;
-
-    for (int i = 0; i < 7; i++) {
-        polyhedron->faces[i].vIndexes = (int*)(malloc(polyhedron->faces[i].nVertices*sizeof(int)));
+    if (fileptr == NULL) {
+        perror("Impossibile aprire il file");
+        exit(1);
     }
 
-    polyhedron->faces[0].vIndexes[0] = 0;
-    polyhedron->faces[0].vIndexes[1] = 1;
-    polyhedron->faces[0].vIndexes[2] = 6;
-    polyhedron->faces[0].vIndexes[3] = 5;
+    fscanf(fileptr, "element vertex %d\n", &(polyhedron->nVertices));
+    fscanf(fileptr, "element face %d\n", &(polyhedron->nFaces));
 
-    polyhedron->faces[1].vIndexes[0] = 1;
-    polyhedron->faces[1].vIndexes[1] = 2;
-    polyhedron->faces[1].vIndexes[2] = 7;
-    polyhedron->faces[1].vIndexes[3] = 6;
+    int nVertices = polyhedron->nVertices;
+    int nFaces = polyhedron->nFaces;
 
-    polyhedron->faces[2].vIndexes[0] = 2;
-    polyhedron->faces[2].vIndexes[1] = 3;
-    polyhedron->faces[2].vIndexes[2] = 8;
-    polyhedron->faces[2].vIndexes[3] = 7;
-
-    polyhedron->faces[3].vIndexes[0] = 3;
-    polyhedron->faces[3].vIndexes[1] = 4;
-    polyhedron->faces[3].vIndexes[2] = 9;
-    polyhedron->faces[3].vIndexes[3] = 8;
-
-    polyhedron->faces[4].vIndexes[0] = 9;
-    polyhedron->faces[4].vIndexes[1] = 4;
-    polyhedron->faces[4].vIndexes[2] = 0;
-    polyhedron->faces[4].vIndexes[3] = 5;
-
-    polyhedron->faces[5].vIndexes[0] = 6;
-    polyhedron->faces[5].vIndexes[1] = 7;
-    polyhedron->faces[5].vIndexes[2] = 8;
-    polyhedron->faces[5].vIndexes[3] = 9;
-    polyhedron->faces[5].vIndexes[4] = 5;
-
-    polyhedron->faces[6].vIndexes[0] = 0;
-    polyhedron->faces[6].vIndexes[1] = 4;
-    polyhedron->faces[6].vIndexes[2] = 3;
-    polyhedron->faces[6].vIndexes[3] = 2;
-    polyhedron->faces[6].vIndexes[4] = 1;
-
-    for (int i = 0; i < 7; i++) {
-        polyhedron->faces[i].normal = getNormal(polyhedron->faces[i], *polyhedron);
+    polyhedron->faces = (tPolygon*)(malloc(nFaces*sizeof(tPolygon)));
+    polyhedron->vertices = (tVertex*)(malloc(nVertices*sizeof(tVertex)));
+    tVertex *currVertex;
+    for (int i = 0; i < nVertices; i++) {
+        currVertex = &(polyhedron->vertices[i]);
+        fscanf(fileptr, "%f %f %f %f %f %f\n", &(currVertex->x), &(currVertex->y), &(currVertex->z), 
+        &(currVertex->nx), &(currVertex->ny), &(currVertex->nz));
     }
+
+    tPolygon *currFace;
+    for (int i = 0; i < nFaces; i++) {
+        currFace = &(polyhedron->faces[i]);
+        currFace->vIndexes = (int*)(malloc(polyhedron->faces[i].nVertices*sizeof(int)));
+        fscanf(fileptr, "%d ", &(currFace->nVertices));
+        int currFaceNVertices = currFace->nVertices;
+        for (int j = 0; j < currFaceNVertices; j++) {
+            fscanf(fileptr, "%d ", &(currFace->vIndexes[j]));
+        }
+    }
+
+    // printf("POLIEDRO FACCE %d VERTICI %d\n", polyhedron->nFaces, polyhedron->nVertices);
+    // for (int i = 0; i < nVertices; i++) {
+    //     currVertex = &(polyhedron->vertices[i]);
+    //     printf("VERTICE %f %f %f NORMALE %f %f %f\n", currVertex->x, currVertex->y, currVertex->z,
+    //         currVertex->nx, currVertex->ny, currVertex->nz);
+    // }
+    // for (int i = 0; i < nFaces; i++) {
+    //     currFace = &(polyhedron->faces[i]);
+    //     printf("\nFACCIA NUMERO %d NVERTICI %d VERTICI ", i, currFace->nVertices);
+    //     int currFaceNVertices = currFace->nVertices;
+    //     for (int j = 0; j < currFaceNVertices; j++) {
+    //         printf("%d ", (currFace->vIndexes[j]));
+    //     }
+    // }
+
+    fclose(fileptr);
 
 }
 
@@ -185,11 +168,10 @@ GLvoid drawScene(GLvoid) {
     tVertex currVertex;
     for (int i = 0; i < polyhedron.nFaces; i++) {
         tPolygon currFace = polyhedron.faces[i];
-        tVertex currNormal = currFace.normal;
-        glNormal3f(currNormal.x, currNormal.y, currNormal.z);
         glBegin( GL_POLYGON );
         for (int j = 0; j < currFace.nVertices; j++) {
             currVertex = getNthIndexedVertex(currFace, j, polyhedron);
+            glNormal3f(currVertex.nx, currVertex.ny, currVertex.nz);
             glVertex3f(currVertex.x, currVertex.y, currVertex.z);
         }
         glEnd();
@@ -202,12 +184,11 @@ GLvoid drawScene(GLvoid) {
     glColor4f(0.0, 1.0, 0.0, 1.0);
     for (int i = 0; i < polyhedron.nFaces; i++) {
         tPolygon currFace = polyhedron.faces[i];
-        tVertex currNormal = currFace.normal;
         glBegin( GL_LINES );
         for (int j = 0; j < currFace.nVertices; j++) {
             currVertex = getNthIndexedVertex(currFace, j, polyhedron);
             glVertex3f(currVertex.x, currVertex.y, currVertex.z);
-            glVertex3f(currVertex.x+currNormal.x, currVertex.y+currNormal.y, currVertex.z+currNormal.z);
+            glVertex3f(currVertex.x+currVertex.nx, currVertex.y+currVertex.ny, currVertex.z+currVertex.nz);
         }
         glEnd();
     }
@@ -218,7 +199,11 @@ GLvoid drawScene(GLvoid) {
 
 
 int main(int argc, char** argv) {
-    initializePolyhedron(&polyhedron);
+    if (argc != 2) {
+        perror("Numero di parametri errato");
+        exit(1);
+    }
+    readPolyhedron(argv[1], &polyhedron);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize ( 500, 500 );
