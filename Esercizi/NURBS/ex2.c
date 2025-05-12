@@ -55,6 +55,8 @@ int main(int argc, char** argv) {
     fillWeights(cp, w, cpw, 7);
     theNurb = gluNewNurbsRenderer();
     gluNurbsProperty(theNurb, GLU_U_STEP, 100);
+    gluNurbsProperty(theNurb, GLU_SAMPLING_METHOD,
+        GLU_DOMAIN_DISTANCE);
     gluNurbsCallback(theNurb, GLU_ERROR, (GLvoid(*))nurbsError);
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH);
