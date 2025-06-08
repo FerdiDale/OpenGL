@@ -8,8 +8,9 @@
 #include "../texture.c"
 
 float DEG_TO_RAD = 3.14/180;
-float fishPosition [3] = {-31.4, 0, 0};
-float pointOfView [3] = {0, 0, 1};
+float fishPosition1 [3] = {-31.4, 0, 0};
+float fishPosition2 [3] = {0, 0, -31.4};
+float pointOfView [3] = {5, 0, 5};
 float eyeDistance = 4;
 byte forward = 1;
 unsigned *image, *imagea; 
@@ -26,8 +27,10 @@ GLvoid initTexture( unsigned *image, GLsizei imageWidth, GLsizei imageHeight ) {
 } 
 
 void timeFunc (int value) {
-    fishPosition[0]+=0.1;
-    fishPosition[2]=sin(fishPosition[0]);
+    fishPosition1[0]+=0.1;
+    fishPosition1[2]=sin(fishPosition1[0]);
+    fishPosition2[2]+=0.1;
+    fishPosition2[0]=sin(fishPosition2[2]);
     glutPostRedisplay();
     glutTimerFunc(10, timeFunc, 0);
 }
@@ -44,15 +47,30 @@ GLvoid drawScene(void) {
     glClear( GL_COLOR_BUFFER_BIT );  
     glColor3f( 1.0, 1.0, 1.0);  
     glPushMatrix();
-    gluLookAt(pointOfView[0], pointOfView[1], pointOfView[2], fishPosition[0], 0, 0, 0, 1, 0);
-    glTranslatef(fishPosition[0], 0, fishPosition[2]);
-    glRotatef(-cos(fishPosition[0])*30, 0, 1, 0);
-    glBegin( GL_QUADS );  
-    glTexCoord2fv( t0 );    glVertex3fv( v0 );  
-    glTexCoord2fv( t1 );    glVertex3fv( v1 );  
-    glTexCoord2fv( t2 );    glVertex3fv( v2 );  
-    glTexCoord2fv( t3 );    glVertex3fv( v3 );  
-    glEnd(); 
+    gluLookAt(pointOfView[0], pointOfView[1], pointOfView[2], 0, 0, 0, 0, 1, 0);
+
+        glPushMatrix();
+        glTranslatef(fishPosition1[0], 0, fishPosition1[2]);
+        glRotatef(-cos(fishPosition1[0])*30, 0, 1, 0);
+        glBegin( GL_QUADS );  
+        glTexCoord2fv( t0 );    glVertex3fv( v0 );  
+        glTexCoord2fv( t1 );    glVertex3fv( v1 );  
+        glTexCoord2fv( t2 );    glVertex3fv( v2 );  
+        glTexCoord2fv( t3 );    glVertex3fv( v3 );  
+        glEnd(); 
+        glPopMatrix();
+
+        glPushMatrix();
+        glTranslatef(fishPosition2[0], 0, fishPosition2[2]);
+        glRotatef(-90-cos(fishPosition2[2])*30, 0, 1, 0);
+        glBegin( GL_QUADS );  
+        glTexCoord2fv( t0 );    glVertex3fv( v0 );  
+        glTexCoord2fv( t1 );    glVertex3fv( v1 );  
+        glTexCoord2fv( t2 );    glVertex3fv( v2 );  
+        glTexCoord2fv( t3 );    glVertex3fv( v3 );  
+        glEnd(); 
+        glPopMatrix();
+
     glPopMatrix();
     glutSwapBuffers(); 
 } 
@@ -68,6 +86,7 @@ int main(int argc, char** argv) {
     glutInitWindowSize ( 500, 500 );
     glutCreateWindow("Esercizio"); //Creazione finestra
     initTexture( image, imageWidth, imageHeight );  
+    // initTexture(imagea, imageWidth, imageHeight);
     glClearColor( 0.0, 0.0, 0.0, 1.0 ); 
     aspect = (GLdouble) width / (GLdouble) height;  
     glMatrixMode( GL_PROJECTION );  

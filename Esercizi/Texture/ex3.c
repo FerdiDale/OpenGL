@@ -8,8 +8,8 @@
 #include "../texture.c"
 
 float DEG_TO_RAD = 3.14/180;
-float fishPosition [3] = {-31.4, 0, 0};
-float pointOfView [3] = {0, 0, 1};
+float ballRotation [3] = {0, 0, 0};
+float pointOfView [3] = {0, 3, 3};
 float eyeDistance = 4;
 byte forward = 1;
 unsigned *image, *imagea; 
@@ -26,33 +26,34 @@ GLvoid initTexture( unsigned *image, GLsizei imageWidth, GLsizei imageHeight ) {
 } 
 
 void timeFunc (int value) {
-    fishPosition[0]+=0.1;
-    fishPosition[2]=sin(fishPosition[0]);
+    ballRotation[0]+=1;
+    ballRotation[1]+=2;
+    ballRotation[2]+=3;
     glutPostRedisplay();
-    glutTimerFunc(10, timeFunc, 0);
+    glutTimerFunc(25, timeFunc, 0);
 }
 
 GLvoid drawScene(void) {  
-    float v0[3] = { -1.5, -1.0, 0.0 };  
-    float v1[3] = { 1.5, -1.0, 0.0 };  
-    float v2[3] = { 1.5, +1.0, 0.0 };  
-    float v3[3] = { -1.5, +1.0, 0.0 };  
-    float t0[2] = { 0.0, 0.0 };  
-    float t1[2] = { 1.0, 0.0 };  
-    float t2[2] = { 1.0, 1.0 };  
-    float t3[2] = { 0.0, 1.0 };  
-    glClear( GL_COLOR_BUFFER_BIT );  
-    glColor3f( 1.0, 1.0, 1.0);  
-    glPushMatrix();
-    gluLookAt(pointOfView[0], pointOfView[1], pointOfView[2], fishPosition[0], 0, 0, 0, 1, 0);
-    glTranslatef(fishPosition[0], 0, fishPosition[2]);
-    glRotatef(-cos(fishPosition[0])*30, 0, 1, 0);
-    glBegin( GL_QUADS );  
-    glTexCoord2fv( t0 );    glVertex3fv( v0 );  
-    glTexCoord2fv( t1 );    glVertex3fv( v1 );  
-    glTexCoord2fv( t2 );    glVertex3fv( v2 );  
-    glTexCoord2fv( t3 );    glVertex3fv( v3 );  
-    glEnd(); 
+    glClearColor(0.1, 0.4, 1.0, 1.0);
+    glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    glEnable(GL_DEPTH_TEST);
+    glEnable(GL_LIGHTING);
+    glEnable(GL_LIGHT0);  
+    glPushMatrix(); 
+    gluLookAt(pointOfView[0], pointOfView[1], pointOfView[2], 0, 0, 0, 0, 1, 0);
+    float scaleS = 1.1, scaleT = 1.2;
+    float s[4] = { scaleS, 0, 0, 0 };
+    float t[4] = { 0, scaleT, 0, 0 };
+    glTexGenfv( GL_S, GL_OBJECT_PLANE, s );
+    glTexGenfv( GL_T, GL_OBJECT_PLANE, t );
+    glTexGeni( GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
+    glTexGeni( GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR );
+    glEnable( GL_TEXTURE_GEN_S );   
+    glEnable( GL_TEXTURE_GEN_T );
+    glRotatef(ballRotation[0], 1, 0, 0);
+    glRotatef(ballRotation[1], 0, 1, 0);
+    glRotatef(ballRotation[2], 0, 0, 1);
+    glutSolidSphere(1, 100, 100);
     glPopMatrix();
     glutSwapBuffers(); 
 } 
@@ -68,14 +69,12 @@ int main(int argc, char** argv) {
     glutInitWindowSize ( 500, 500 );
     glutCreateWindow("Esercizio"); //Creazione finestra
     initTexture( image, imageWidth, imageHeight );  
-    glClearColor( 0.0, 0.0, 0.0, 1.0 ); 
     aspect = (GLdouble) width / (GLdouble) height;  
     glMatrixMode( GL_PROJECTION );  
     glLoadIdentity();  
     gluPerspective( 45.0, aspect, 1.0, 50.0 );  
     glMatrixMode( GL_MODELVIEW );  
     glLoadIdentity();  
-    glTranslatef( 0.0, 0.0, -12.0 );  
     glutDisplayFunc( drawScene );  
     glutTimerFunc(10, timeFunc, 0);
     glutMainLoop(); 
