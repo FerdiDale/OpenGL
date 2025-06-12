@@ -144,7 +144,7 @@ GLvoid drawTopper() {
         glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE, silverDiffuseMaterial);
         glMaterialfv(GL_FRONT_AND_BACK, GL_AMBIENT, silverAmbientMaterial);
         glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, silverSpecularMaterial);
-        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 0.4);
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 128);
     
         gluCylinder(qcylinder, 0.1, 0.1, 0.1, 50, 50);
         gluDisk(qdisk, 0, 0.1, 50, 50);
