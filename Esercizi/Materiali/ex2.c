@@ -15,8 +15,7 @@ byte lPressed;
 float lookX = 0, lookY = 0, lookZ = 0;
 float eyeDistance = 10;
 float translateZ = 0;
-float translateX = 0;
-float hallDepth = 30, hallWidth = 15, hallHeight = 15;
+float hallDepth = 90, hallWidth = 10, hallHeight = 15;
 float bitSize = 0.5;
 
 void motionFunc(int x, int y) {
@@ -25,10 +24,12 @@ void motionFunc(int x, int y) {
         deltaY = y-startY;
         startX = x;
         startY = y;
-        xzAngle+=deltaX;
-        yzAngle+=deltaY;
-        lookX = eyeDistance*sin(DEG_TO_RAD*xzAngle)*cos(DEG_TO_RAD*yzAngle);
-        lookY = eyeDistance*sin(DEG_TO_RAD*yzAngle);
+        if (abs(yzAngle+deltaY/3) <= 30)        
+            yzAngle+=deltaY/3;
+        if (abs(xzAngle+deltaX/3) <= 30)
+            xzAngle+=deltaX/3;
+        lookX = xzAngle;
+        lookY = yzAngle;
         lookZ = eyeDistance*cos(DEG_TO_RAD*xzAngle)*cos(DEG_TO_RAD*yzAngle);
         glutPostRedisplay();
     }
@@ -37,22 +38,16 @@ void motionFunc(int x, int y) {
 void keyboard (unsigned char key, int x, int y) {
     switch (key){
         case 'w':
-            translateZ++;
+            if (translateZ-1 > -hallDepth) {
+                translateZ--;
+                printf("%f", translateZ);
+            }
             glutPostRedisplay();
             break;
 
         case 's':
-            translateZ--;
-            glutPostRedisplay();
-            break;
-            
-        case 'a':
-            translateX++;
-            glutPostRedisplay();
-            break;
-
-        case 'd':
-            translateX--;
+            if (translateZ < 0)
+                translateZ++;
             glutPostRedisplay();
             break;
 
@@ -108,8 +103,8 @@ GLvoid buildHall() {
              }
         }
 
-        float x = -hallHeight/2;
-        for (float y = -hallWidth/2; y < hallWidth/2; y+=bitSize) {
+        float x = -hallWidth/2;
+        for (float y = -hallHeight/2; y < hallHeight/2; y+=bitSize) {
              for (float z = -hallDepth/2; z < hallDepth/2; z+=bitSize) {
                 glNormal3f(1, 0, 0);
                 glBegin(GL_POLYGON);
@@ -121,8 +116,8 @@ GLvoid buildHall() {
              }
         }
 
-        x = hallHeight/2;
-        for (float y = -hallWidth/2; y < hallWidth/2; y+=bitSize) {
+        x = hallWidth/2;
+        for (float y = -hallHeight/2; y < hallHeight/2; y+=bitSize) {
              for (float z = -hallDepth/2; z < hallDepth/2; z+=bitSize) {
                 glNormal3f(-1, 0, 0);
                 glBegin(GL_POLYGON);
@@ -141,32 +136,51 @@ GLvoid drawScene(GLvoid) {
     glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
     glEnable(GL_DEPTH_TEST);
     glEnable(GL_LIGHTING);
-    glEnable(GL_LIGHT0);
     glEnable(GL_LIGHT1);
     glEnable(GL_NORMALIZE);
-    // glEnable(GL_LIGHT2);
-    // glLightModelf(GL_LIGHT_MODEL_TWO_SIDE, 1.0);
+    glEnable(GL_LIGHT2);
+    glEnable(GL_LIGHT3);
+    glEnable(GL_LIGHT4);
+    glEnable(GL_LIGHT5);
+    glEnable(GL_LIGHT6);
     
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluPerspective(90, 1, 1, 40);
+    gluPerspective(90, 1, 1, 80);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-        gluLookAt(0+translateX, 0, -hallWidth/2+translateZ, lookX, lookY, lookZ, 0.0, 1.0, 0.0);
+        
+        gluLookAt(0, -hallHeight/10, -hallDepth/2, lookX, lookY, lookZ, 0.0, 1.0, 0.0);
+        glTranslatef(0, 0, translateZ);
 
-        buildHall();
-
-        // y = hallHeight/3;
-        // x = -hallWidth/2+0.01;
-        float x = 0, y = 0;
-        float z = 0;
-        GLfloat diffuse [4] = {1, 1, 1, 1}; 
-        // for (float z = -hallDepth/2+1; z < hallDepth/2-1; z+=(hallDepth-2)/4) {
-            GLfloat position1 [4] = {x, y, z, 0};
-            glLightfv(GL_LIGHT1, GL_POSITION, position1);
-            glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
-            glLightfv(GL_LIGHT1, GL_SPECULAR, diffuse);
-        // }
+        float y = hallHeight/3;
+        float x = -hallWidth/2+1;
+        GLint lightId = GL_LIGHT0;
+        for (float z = -hallDepth/2+1; z <= hallDepth/2-1; z+=(hallDepth-2)/2) {
+            lightId++;
+            GLfloat position1 [4] = {x, y, z, 1};
+            GLfloat diffuse [4] = {1, 1, 1, 1};
+            glLightfv(lightId, GL_POSITION, position1);
+            glLightfv(lightId, GL_DIFFUSE, diffuse);
+            glLightfv(lightId, GL_SPECULAR, diffuse);
+            glLightf(lightId, GL_CONSTANT_ATTENUATION, 1.0);
+            glLightf(lightId, GL_LINEAR_ATTENUATION, 0.05);
+            glLightf(lightId, GL_QUADRATIC_ATTENUATION, 0.01);
+        }
+        y = hallHeight/3;
+        x = hallWidth/2-1;
+        for (float z = -hallDepth/2+1; z <= hallDepth/2-1; z+=(hallDepth-2)/2) {
+            lightId++;
+            GLfloat position1 [4] = {x, y, z, 1};
+            GLfloat diffuse [4] = {1, 1, 1, 1};
+            glLightfv(lightId, GL_POSITION, position1);
+            glLightfv(lightId, GL_DIFFUSE, diffuse);
+            glLightfv(lightId, GL_SPECULAR, diffuse);
+            glLightf(lightId, GL_CONSTANT_ATTENUATION, 1.0);
+            glLightf(lightId, GL_LINEAR_ATTENUATION, 0.05);
+            glLightf(lightId, GL_QUADRATIC_ATTENUATION, 0.01);
+        }
+        buildHall();    
 
     glPopMatrix();
     glFlush();
@@ -182,5 +196,6 @@ int main(int argc, char** argv) {
     glutMotionFunc(motionFunc);
     glutMouseFunc(mouseFunc);
     glutDisplayFunc(drawScene); //Richiamo funzione di disegno
+    glEnable(GL_AUTO_NORMAL);
     glutMainLoop(); //Ciclo principale
 }
