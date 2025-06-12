@@ -49,10 +49,10 @@ GLvoid initRandomColors() {
     }
     for (int i = 0; i < 3; i++) {
         for (int j = 0; j < 2; j++) {
-            lightsColorsMatrix[i][j][0] = randomFloat()/2;
-            lightsColorsMatrix[i][j][1] = randomFloat()/2;
-            lightsColorsMatrix[i][j][2] = randomFloat()/2;
-            lightsColorsMatrix[i][j][rand()%3] = 0.5;
+            lightsColorsMatrix[i][j][0] = randomFloat()*3/2;
+            lightsColorsMatrix[i][j][1] = randomFloat()*3/2;
+            lightsColorsMatrix[i][j][2] = randomFloat()*3/2;
+            lightsColorsMatrix[i][j][rand()%3] = 0.66;
         }
     }
 }
@@ -371,7 +371,7 @@ GLvoid drawScene(GLvoid) {
         GLfloat position1 [4] = {1, 5, 1, 1};
         GLfloat diffuse1 [3] = {0.4, 0.4, 0.4};
         GLfloat specular1 [3] = {0.6, 0.6, 0.6};
-        GLfloat ambient1 [3] = {0.1, 0.1, 0.1};
+        GLfloat ambient1 [3] = {0.2, 0.2, 0.2};
         glLightfv(GL_LIGHT1, GL_POSITION, position1);
         glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse1);
         glLightfv(GL_LIGHT1, GL_SPECULAR, specular1);
