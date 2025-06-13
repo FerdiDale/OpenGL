@@ -74,6 +74,8 @@ tPolyhedron readPolyhedron (char* pathname, tPolyhedron* polyhedron) {
     fscanf(fileptr, "element vertex %d\n", &(polyhedron->nVertices));
     fscanf(fileptr, "element face %d\n", &(polyhedron->nFaces));
 
+    perror("1");
+
     int nVertices = polyhedron->nVertices;
     int nFaces = polyhedron->nFaces;
 
@@ -85,18 +87,22 @@ tPolyhedron readPolyhedron (char* pathname, tPolyhedron* polyhedron) {
         fscanf(fileptr, "%f %f %f %f %f %f\n", &(currVertex->x), &(currVertex->y), &(currVertex->z), 
         &(currVertex->nx), &(currVertex->ny), &(currVertex->nz));
     }
+    
+    perror("2");
 
     tPolygon *currFace;
     for (int i = 0; i < nFaces; i++) {
         currFace = &(polyhedron->faces[i]);
         currFace->vIndexes = (int*)(malloc(polyhedron->faces[i].nVertices*sizeof(int)));
+        perror("3");
         fscanf(fileptr, "%d ", &(currFace->nVertices));
         int currFaceNVertices = currFace->nVertices;
         for (int j = 0; j < currFaceNVertices; j++) {
+            perror("4");
             fscanf(fileptr, "%d ", &(currFace->vIndexes[j]));
         }
     }
-
+    
     // printf("POLIEDRO FACCE %d VERTICI %d\n", polyhedron->nFaces, polyhedron->nVertices);
     // for (int i = 0; i < nVertices; i++) {
     //     currVertex = &(polyhedron->vertices[i]);

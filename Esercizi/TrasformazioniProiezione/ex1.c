@@ -59,8 +59,8 @@ GLvoid drawScene(GLvoid) {
     glEnable(GL_DEPTH_TEST);
 
     glLoadIdentity();
-    // glFrustum(-1-additionalWidth, 1+additionalWidth, -1-additionalHeight, 1+additionalHeight, 1-additionalDepth, 5);
-    gluPerspective(90+additionalWidth, 1, 1-additionalDepth, 5);
+    glFrustum(-1-additionalWidth, 1+additionalWidth, -1-additionalHeight, 1+additionalHeight, 1-additionalDepth, 5);
+    // gluPerspective(90+additionalWidth, 1, 1-additionalDepth, 5);
     glTranslatef(0.0, 0.0, -3.0);
     glRotatef(angle, 0.0, 1.0, 0.0);
 
