@@ -1,0 +1,1 @@
+magick input.jpg -alpha on -background none -alpha opaque SGI:output.rgba

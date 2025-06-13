@@ -22,10 +22,19 @@ GLfloat controlPoints[4][4][3] = { {{-3, -3, -3}, {-3, -1, -3},{-3, 1, -3}, {-3,
                                         {{3, -3, -3},  {3, -1, -3}, {3, 1, -3},  {3, 3, -3}}};
 GLUnurbsObj *theNurb;
 GLfloat knots[8] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0};
+GLfloat pesi[4][4]={{1, .5, .5, 1},{1, .5, .5, 1}, {1, .5, .5, 1},{1, .5, .5, 1}};
+GLfloat cpw [4][4][4];
 
-GLfloat E[5][2]={{0,0},{1,0},{1,1},{0,1},{0,0}};
-GLfloat P[7][2]={{0.3,0.3},{0.3,0.7}, {0.7,0.7},{0.7,0.3},{0.3,0.3}};
+void fillWeights () {
 
+    for (int i = 0; i < 4; i++) {
+        for (int j = 0; j < 4; j++) {
+            for (int k = 0; k < 3; k++)
+                cpw[i][j][k] = controlPoints[i][j][k]*pesi[i][j];
+            cpw[i][j][3] = pesi[i][j];
+        }
+    }
+}
 
 void motionFunc(int x, int y) {
     if (lPressed) {
@@ -81,13 +90,7 @@ GLvoid drawScene(GLvoid) {
     gluNurbsProperty(theNurb, GLU_SAMPLING_METHOD, GLU_DOMAIN_DISTANCE);
     gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL); 
     // gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);
-    gluNurbsSurface(theNurb,8, knots, 8, knots,4 * 3, 3, &controlPoints[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
-    gluBeginTrim(theNurb);
-    gluPwlCurve(theNurb, 5, &E[0][0], 2, GLU_MAP1_TRIM_2);
-    gluEndTrim(theNurb);
-    gluBeginTrim(theNurb);
-    gluPwlCurve(theNurb, 5, &P[0][0], 2, GLU_MAP1_TRIM_2);
-    gluEndTrim(theNurb);
+    gluNurbsSurface(theNurb, 8, knots, 8, knots, 4 * 4, 4, &cpw[0][0][0], 4, 4, GL_MAP2_VERTEX_4);
     gluEndSurface(theNurb);
 
     glPopMatrix();
@@ -96,6 +99,7 @@ GLvoid drawScene(GLvoid) {
 
 
 int main(int argc, char** argv) {
+    fillWeights();
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_RGBA|GLUT_DEPTH);
     glutInitWindowSize ( 500, 500 );

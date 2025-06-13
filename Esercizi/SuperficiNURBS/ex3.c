@@ -12,15 +12,19 @@ float yzAngle = 0;
 float startX, startY;
 float deltaX, deltaY;
 byte lPressed;
-float eyeX = 0, eyeY = 0, eyeZ = 5;
-float eyeDistance = 5;
+float eyeX = 0, eyeY = 0, eyeZ = 6;
+float eyeDistance = 6;
 
+int numberUValues = 30, numberVValues = 8;
 GLfloat controlPoints[4][4][3] = { {{-3, -3, -3}, {-3, -1, -3},{-3, 1, -3}, {-3, 3, -3}},
                                         {{-1, -3, -3}, {-1, -1, 3}, {-1, 1, 3},  {-1, 3, -3}},
                                         {{1, -3, -3},  {1, -1, 3},  {1, 1, 3},   {1, 3, -3}},
                                         {{3, -3, -3},  {3, -1, -3}, {3, 1, -3},  {3, 3, -3}}};
 GLUnurbsObj *theNurb;
 GLfloat knots[8] = {0.0, 0.0, 0.0, 0.0, 1.0, 1.0, 1.0, 1.0};
+
+GLfloat E[5][2]={{0,0},{1,0},{1,1},{0,1},{0,0}};
+GLfloat P[7][2]={{0.3,0.3},{0.3,0.7}, {0.7,0.7},{0.7,0.3},{0.3,0.3}};
 
 
 void motionFunc(int x, int y) {
@@ -55,13 +59,6 @@ void mouseFunc (int button, int state, int x, int y) {
 
 }
 
-GLvoid errorCallback(GLenum errorCode) { 
-    const GLubyte *estring;
-    estring = gluErrorString(errorCode);
-    fprintf (stderr, "Errore QUADRICHE: %s\n", estring);
-    exit (0);
-}
-
 GLvoid drawScene(GLvoid) {
 
     glClearColor(0.0, 0.0, 0.0, 1.0);
@@ -75,38 +72,23 @@ GLvoid drawScene(GLvoid) {
     gluPerspective(90, 1, 1, 20);
     glMatrixMode(GL_MODELVIEW);
     glPushMatrix();
-    gluLookAt(eyeX, eyeY, eyeZ, 0, 0, 0, 0.0, 1.0, 0.0);
+    gluLookAt(eyeX, eyeY, eyeZ, 1.5, 1.5, 1.5, 0.0, 1.0, 0.0);
 
-    GLUquadricObj *qsphere, *qcylinder, *qdisk; 
-    qsphere = gluNewQuadric(); //Creazione 
-    gluQuadricCallback(qsphere, GLU_ERROR, (GLvoid (*))errorCallback); //Gestione errori 
-    gluQuadricDrawStyle(qsphere, GLU_FILL); 
-    gluQuadricOrientation(qsphere, GLU_OUTSIDE); 
-    gluQuadricNormals(qsphere, GLU_SMOOTH); 
-    glPushMatrix();
-    glTranslatef(0, 0, 2);
-    gluSphere(qsphere, 0.75, 15, 10); //raggio, longit., latit.
-    glPopMatrix();
-    qcylinder = gluNewQuadric(); //Creazione 
-    gluQuadricCallback(qcylinder, GLU_ERROR, (GLvoid (*))errorCallback); //Gestione errori 
-    gluQuadricDrawStyle(qcylinder, GLU_FILL); 
-    gluQuadricOrientation(qcylinder, GLU_OUTSIDE); 
-    gluQuadricNormals(qcylinder, GLU_SMOOTH); 
-    glPushMatrix();
-    glTranslatef(2, 0, 0);
-    glRotatef(-90, 1, 0, 0);
-    gluCylinder(qcylinder, 0.75, 0.75, 1.5, 15, 10);
-    glPopMatrix();
-    qdisk = gluNewQuadric(); //Creazione 
-    gluQuadricCallback(qdisk, GLU_ERROR, (GLvoid (*))errorCallback); //Gestione errori 
-    gluQuadricDrawStyle(qdisk, GLU_FILL); 
-    gluQuadricOrientation(qdisk, GLU_OUTSIDE); 
-    gluQuadricNormals(qdisk, GLU_SMOOTH); 
-    glPushMatrix();
-    glTranslatef(-1, 0, -1);
-    glRotatef(-90, 1, 0, 0);
-    gluDisk(qdisk, 0.25, 0.75, 15, 10);
-    glPopMatrix();
+    theNurb=gluNewNurbsRenderer();
+    gluBeginSurface(theNurb); 
+    gluNurbsProperty(theNurb, GLU_U_STEP, 20); 
+    gluNurbsProperty(theNurb, GLU_V_STEP, 100); 
+    gluNurbsProperty(theNurb, GLU_SAMPLING_METHOD, GLU_DOMAIN_DISTANCE);
+    gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_FILL); 
+    // gluNurbsProperty(theNurb, GLU_DISPLAY_MODE, GLU_OUTLINE_POLYGON);
+    gluNurbsSurface(theNurb,8, knots, 8, knots,4 * 3, 3, &controlPoints[0][0][0], 4, 4, GL_MAP2_VERTEX_3);
+    gluBeginTrim(theNurb);
+    gluPwlCurve(theNurb, 5, &E[0][0], 2, GLU_MAP1_TRIM_2);
+    gluEndTrim(theNurb);
+    gluBeginTrim(theNurb);
+    gluPwlCurve(theNurb, 5, &P[0][0], 2, GLU_MAP1_TRIM_2);
+    gluEndTrim(theNurb);
+    gluEndSurface(theNurb);
 
     glPopMatrix();
     glFlush();
@@ -121,5 +103,7 @@ int main(int argc, char** argv) {
     glutMotionFunc(motionFunc);
     glutMouseFunc(mouseFunc);
     glutDisplayFunc(drawScene); //Richiamo funzione di disegno
+    glEnable(GL_AUTO_NORMAL);
+    glMapGrid2f(numberUValues, 0, 1, numberVValues, 0, 1);
     glutMainLoop(); //Ciclo principale
 }
